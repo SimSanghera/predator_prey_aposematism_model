@@ -81,13 +81,13 @@ class Prey:
     
 
     def move(self,
-             grid_size: int) -> None:
+             grid_size: Tuple[int, int]) -> None:
         """
         Uses the movement_probability to determine if the prey will move during a time step.
         If the prey moves, it randomly selects a new position within the grid.
 
         Args:
-            grid_size (int): Size of grid (cells or metres)
+            grid_size Tuple[int, int]: Size of grid width and height
         """
         if random.random() < self.movement_probability:
             current_position = self.path[-1] if self.path else (0, 0)
@@ -98,7 +98,7 @@ class Prey:
 
     def _get_new_position(self,
                           current_position: Tuple[int, int],
-                          grid_size: int) -> Tuple[int, int]:
+                          grid_size: Tuple[int, int]) -> Tuple[int, int]:
         """
         This is a helper function that calculates the new position of the prey based on the current position and grid size.
 
@@ -110,8 +110,8 @@ class Prey:
             Tuple[int, int]: New coordinates, x, y
         """
         x, y = current_position
-        new_x = max(0, min(x + random.randint(-1, 1), grid_size - 1))
-        new_y = max(0, min(y + random.randint(-1, 1), grid_size - 1))
+        new_x = max(0, min(x + random.randint(-1, 1), grid_size[0] - 1))
+        new_y = max(0, min(y + random.randint(-1, 1), grid_size[1] - 1))
         return new_x, new_y
     
 
@@ -153,7 +153,30 @@ class Prey:
         Returns:
             bool: True - prey reproduces, False - prey does not reproduce
         """
-        return random.random() < reproduction_rate
+        return random.random() < self.reproduction_rate
+    
+
+    def reproduce(self) -> 'Prey':
+        """
+        Reproduces a new prey based on the reproduction rate, if reproduction is successful.
+        It uses the same parameters as the parent prey.
+
+        Returns:
+            Prey: New prey object. Return type has been updated to Prey.
+        """
+        if random.random() < self.reproduction_rate:
+            return Prey(
+                camouflage = self.camouflage,
+                aposematic = self.aposematic,
+                aposematic_pattern = self.aposematic_pattern,
+                toxicity = self.toxicity,
+                camo_aposematic_distance = self.camo_aposematic_distance,
+                movement_probability = self.movement_probability,
+                evolution_threshold = self.evolution_threshold,
+                evolution_probability = self.evolution_probability,
+                reproduction_rate = self.reproduction_rate
+                )
+        return None
     
 
     def set_outcome(self,

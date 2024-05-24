@@ -103,22 +103,23 @@ class Predator:
 
 
     def move(self,
-                grid_size: int) -> None:
+                grid_size: Tuple[int, int]) -> None:
         """
         Moves the predator to a new position on the grid, within the bounds of the grid size.
         Movement is based on current position and a random direction and step size.
-        If the predator is sick, it does not move.
+        If the predator is sick, it does not move. The sick timer is reduced each time-step until it reaches 0.
 
         Args:
             grid_size (int): the size of the grid (number of cells)
         """
         if self.sick_timer > 0:
-            x, y, = self.position
-            new_x = max(0, min(x + random.randint(-1, 1), grid_size - 1)
-            new_y = max(0, min(y + random.randint(-1, 1), grid_size - 1)
-            self.position = (new_x, new_y)
-        else:
-            self.sick_timer -= 1
+            self.sick_time -= 1
+            return
+        x, y = self.position
+        new_x = max(0, min(x + random.randint(-1, 1), grid_size[0] - 1))
+        new_y = max(0, min(y + random.randint(-1, 1), grid_size[1] - 1))
+        self.position = (new_x, new_y)
+
     
     def detect_prey(self,
                     prey: Prey,
@@ -206,6 +207,7 @@ class Predator:
                 self.hunting_success *= 0.9 # decrease hunting success by 10%
                 self.toxicity_threshold *= 0.9 # decrease toxicity threshold by 10%
     
+    
     def get_sick(self) -> None:
         """
         Makes the predator sick after consuming toxic prey.
@@ -214,7 +216,7 @@ class Predator:
         self.sick_timer = self.sickness_duration
 
     def reproduce(self,
-                  min_prey_eaten: int) -> bool:
+                  min_prey_eaten: int) -> 'Predator':
         """
         Determines if the predator reproduces based on the reproduction rate and the number of prey eaten.
         
@@ -227,5 +229,14 @@ class Predator:
         if self.prey_eaten >= min_prey_eaten:
             if random.random() < self.reproduction_rate:
                 self.prey_eaten = 0 # reset the number of prey eaten
-                return True
-        return False
+                return Predator(
+                    hunting_success = self.hunting_success,
+                    learning_rate = self.learning_rate,
+                    reproduction_rate = self.reproduction_rate,
+                    detection_probability = self.detection_probability,
+                    visual_range = self.visual_range,
+                    memory_size = self.memory_size,
+                    toxicity_threshold = self.toxicity_threshold,
+                    sickness_duration = self.sickness_duration
+                )
+        return None
